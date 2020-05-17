@@ -1,5 +1,3 @@
-
-
 const Cart = require('./cart');
 const db = require('../util/database');
 
