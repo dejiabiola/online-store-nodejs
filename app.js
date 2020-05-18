@@ -9,11 +9,13 @@ const User = require('./models/user.js')
 const Product = require('./models/product')
 const Cart = require('./models/cart')
 const CartItem = require('./models/cart-item')
+const Order = require('./models/order')
+const OrderItem = require('./models/order-item')
 
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', 'views');
+app.set('views', 'views'); 
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop'); 
@@ -46,6 +48,10 @@ Cart.belongsTo(User)
 //* sequelize where the relations id should be stored.
 Cart.belongsToMany(Product, { through: CartItem })
 Product.belongsToMany(Cart, { through: CartItem })
+
+Order.belongsTo(User)
+User.hasMany(Order)
+Order.belongsToMany(Product, { through: OrderItem })
 
 
 // * .sync will sync all defined models to the db and basically creates table for them
