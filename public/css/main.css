@@ -141,6 +141,17 @@ form {
   align-items: stretch;
 }
 
+.image {
+  height: 20rem;
+  display: flex;
+  justify-content: center;
+}
+
+.image > img {
+  height: 100%;
+  width: 50%;
+}
+
 .card {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
 }
