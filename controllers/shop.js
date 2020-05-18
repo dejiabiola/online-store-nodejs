@@ -40,39 +40,72 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  Cart.getCart(cart => {
-    Product.fetchAll(products => {
-      console.log("gotten")
-      const cartProducts = []
-      for (product of products) {
-        const cartProduct = cart.products.find(prod => prod.id === product.id);
-        if (cartProduct) {
-          cartProducts.push({productData: product, qty: cartProduct.qty});
-        }
-      }
-      res.render('shop/cart', {
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        products: cartProducts
-      });
-    })
+  req.user.getCart().then(cart => {
+    return cart.getProducts()
+  })
+  .then(cartProducts => {
+    console.log(cartProducts)
+    res.render('shop/cart', {
+      path: '/cart',
+      pageTitle: 'Your Cart',
+      products: cartProducts
+    });
+  })
+  .catch(err => {
+    console.log(err)
   })
 };
 
 exports.postCart = (req,res,next) => {
   const prodId = req.body.productId;
-  Product.findById(prodId, product => {
-    Cart.addProduct(prodId, product.price);
+  let fetchedCart
+  let newQuantity = 1
+  //* First get the cart
+  req.user.getCart()
+  .then(cart => {
+    // * store the cart in a global variable then return the products belonging to that cart
+    fetchedCart = cart
+    return cart.getProducts({ where: { id: prodId }})
   })
-  res.redirect('/cart')
+  .then(products => {
+    //* Check if there's products belonging to the cart
+    let product
+    if (products.length > 0) {
+      product = products[0]
+    }
+    //* Set the new quantity
+    if (product) {
+      // todo: write logic for handling increase of cart product quantity
+      const oldQuantity = product.cartItem.quantity
+      newQuantity = oldQuantity + 1
+      return product
+    }
+    //* return the exact product the user wants to add from the product db
+    return Product.findByPk(prodId)
+  })
+  .then(product => {
+    return fetchedCart.addProduct(product, { through: { quantity: newQuantity }})
+  })
+  .then(added => {
+    res.redirect('/cart')
+  })
+  .catch(err => console.log(err))
 }
 
 exports.postCartDeleteItem = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findById(prodId, product => {
-    Cart.deleteProduct(prodId, product.price);
+  req.user.getCart()
+  .then(cart => {
+    return cart.getProducts({ where: { id: prodId }})
+  })
+  .then(products => {
+    const [ product ] = products
+    return product.cartItem.destroy()
+  })
+  .then(() => {
     res.redirect('/cart')
   })
+  .catch(err => console.log(err))
 }
 
 exports.getOrders = (req, res, next) => {

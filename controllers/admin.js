@@ -14,21 +14,22 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  Product.create({
+  req.user.createProduct({
     title,
     price, 
     imageUrl,
-    description
+    description,
   }).then(result => {
     console.log('Inserted product into the database')
     res.redirect('/admin/products');
-  }).catch(err => {
+  }).catch(err => { 
     console.log(err)
   })
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll().then(products => {
+  req.user.getProducts()
+  .then(products => {
     res.render('admin/products', {
       prods: products,
       pageTitle: 'Admin Products',
@@ -45,7 +46,11 @@ exports.getEditProduct = (req,res,next) => {
   if (!editMode) {
     return res.redirect('/');
   }
-  Product.findByPk(prodId).then(product => {
+  //* Instead of the below, you can still do Product.findByPk(prodId).then(product)
+  req.user.getProducts({where: { id: prodId}})
+  .then(products => {
+    // ! remember that getProducts will always return an array of products even if it is only one value
+    const [product] = products
     if (!product) res.status(404).render('404', { pageTitle: 'Page Not Found', path: '/404' });
     else {
       res.render('admin/edit-product', {
