@@ -28,13 +28,6 @@ app.use((req, res, next) => {
     next()
   })
   .catch(err => console.log(err))
-  // const user = new User({ name: 'Adedeji Abiola', email: 'adedejiabiola56@gmail.com'})
-  // user.save()
-  // .then(user => {
-  //   next()
-  //   console.log(user)
-  // })
-  // .catch(err => console.log(err))
 })
 
 app.use('/admin', adminRoutes);

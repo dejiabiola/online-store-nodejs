@@ -13,7 +13,7 @@ class User {
     return db.collection('users').insertOne(this)
   }
 
-  findByPk(userId) {
+  static findByPk(userId) {
     const db = getDb()
     return db.collection('users').findOne({_id: new ObjectId(userId)})
   }
