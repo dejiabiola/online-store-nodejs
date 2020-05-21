@@ -39,11 +39,7 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user.getCart().then(cart => {
-    return cart.getProducts()
-  })
-  .then(cartProducts => {
-    console.log(cartProducts)
+  req.user.getCart().then(cartProducts => {
     res.render('shop/cart', {
       path: '/cart',
       pageTitle: 'Your Cart',
@@ -57,33 +53,12 @@ exports.getCart = (req, res, next) => {
 
 exports.postCart = (req,res,next) => {
   const prodId = req.body.productId;
-  let fetchedCart
-  let newQuantity = 1
-  //* First get the cart
-  req.user.getCart()
-  .then(cart => {
-    // * store the cart in a global variable then return the products belonging to that cart
-    fetchedCart = cart
-    return cart.getProducts({ where: { id: prodId }})
-  })
-  .then(products => {
-    //* Check if there's products belonging to the cart
-    let product
-    if (products.length > 0) {
-      product = products[0]
-    }
-    //* Set the new quantity
-    if (product) {
-      // todo: write logic for handling increase of cart product quantity
-      const oldQuantity = product.cartItem.quantity
-      newQuantity = oldQuantity + 1
-      return product
-    }
-    //* return the exact product the user wants to add from the product db
-    return Product.findByPk(prodId)
-  })
+  Product.findByPk(prodId)
   .then(product => {
-    return fetchedCart.addProduct(product, { through: { quantity: newQuantity }})
+    return req.user.addToCart(product)
+  })
+  .then(result => {
+    console.log(result)
   })
   .then(added => {
     res.redirect('/cart')
@@ -93,14 +68,7 @@ exports.postCart = (req,res,next) => {
 
 exports.postCartDeleteItem = (req, res, next) => {
   const prodId = req.body.productId;
-  req.user.getCart()
-  .then(cart => {
-    return cart.getProducts({ where: { id: prodId }})
-  })
-  .then(products => {
-    const [ product ] = products
-    return product.cartItem.destroy()
-  })
+  req.user.deleteItemFromCart(prodId)
   .then(() => {
     res.redirect('/cart')
   })
@@ -108,7 +76,7 @@ exports.postCartDeleteItem = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-  req.user.getOrders({include: ['products']})
+  req.user.getOrders()
   .then(orders => {
     res.render('shop/orders', {
       path: '/orders',
@@ -127,25 +95,7 @@ exports.getCheckout = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
-  let fetchedCart
-  req.user.getCart()
-  .then(cart => {
-    fetchedCart = cart
-    return cart.getProducts()
-  })
-  .then(products => {
-    return req.user.createOrder()
-    .then(order => {
-      return order.addProducts(products.map(product => {
-        product.orderItem = { quantity: product.cartItem.quantity}
-        return product
-      }))
-    })
-    .catch(err => console.log(err))
-  })
-  .then(result => {
-    return fetchedCart.setProducts(null)
-  })
+  req.user.addOrder()
   .then(result => {
     res.redirect('/orders')
   })

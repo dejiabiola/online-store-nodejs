@@ -8,7 +8,7 @@ let _db
 const mongoConnect = async (callback) => {
   const uri = `mongodb+srv://dejiabiola:aa270494@cluster0-aq5ph.mongodb.net/shop?retryWrites=true&w=majority`;
   const client = await new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  client.connect((err) => {
+  await client.connect((err) => {
     if (err) console.log(err)
 
     _db = client.db('shop')
