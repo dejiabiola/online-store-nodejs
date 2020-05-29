@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 
 
 const errorController = require('./controllers/error');
-const mongoConnect = require('./util/mongodb-database').mongoConnect
+const mongoose = require('mongoose')
 const User = require('./models/user')
 
 const app = express();
@@ -22,9 +22,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findByPk('5ec5b36c47da95d6d353a8ad')
+  User.findById('5ed0596e95b1d5879aae1347')
   .then(user => {
-    req.user = new User(user.name, user.email, user.cart, user._id)
+    req.user = user
     next()
   })
   .catch(err => console.log(err))
@@ -36,8 +36,23 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 
-mongoConnect(() => {
-  console.log("Appjs verifed! We are connected")
+const uri = `mongodb+srv://dejiabiola:aa270494@cluster0-aq5ph.mongodb.net/shop?retryWrites=true&w=majority`;
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}).then(result => {
+  User.findOne().then(user => {
+    if (!user) {
+      const user = new User({
+        name: 'Deji',
+        email: 'deji@zipp.com',
+        cart: {
+          items: [],
+        }
+      })
+      user.save()
+    }
+  })
+  console.log('Db is connected, user is connected and we are live!')
   app.listen(3000)
-})
+}).catch(err => console.log(err))
+
+
 
