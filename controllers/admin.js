@@ -6,7 +6,8 @@ exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
-    editing: false
+    editing: false,
+    isLoggedIn: req.isLoggedIn
   });
 };
 
@@ -31,7 +32,8 @@ exports.getProducts = (req, res, next) => {
     res.render('admin/products', {
       prods: products,
       pageTitle: 'Admin Products',
-      path: '/admin/products'
+      path: '/admin/products',
+      isLoggedIn: req.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
@@ -48,14 +50,15 @@ exports.getEditProduct = (req,res,next) => {
   Product.findById(prodId)
   .then(product => {
     if (!product) {
-      res.status(404).render('404', { pageTitle: 'Page Not Found', path: '/404' });
+      res.status(404).render('404', { pageTitle: 'Page Not Found', path: '/404', isLoggedIn: req.isLoggedIn });
     }
     else {
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-products',
         product: product,
-        editing: editMode
+        editing: editMode,
+        isLoggedIn: req.isLoggedIn
       })
     } 
   }).catch(err => {

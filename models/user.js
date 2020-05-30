@@ -12,30 +12,59 @@ const userSchema = new Schema({
     required: true
   },
   cart: {
-    items: [{productId: {type: Schema.Types.ObjectId, ref: 'Product'} , quantity: { type: Number, required: true }}]
+    items: [
+      {
+        product: {
+          type: Schema.Types.ObjectId, 
+          ref: 'Product'
+        }, 
+        quantity: { 
+          type: Number, 
+          required: true 
+        }
+      }
+    ]
   },
 })
+
+userSchema.methods.addToCart = function(product) {
+  const cartProductIndex = this.cart.items.findIndex(cp => {
+    return cp.product.toString() === product._id.toString()
+  })
+  let newQuantity = 1
+  const updatedCartItems = [ ...this.cart.items ]
+  if (cartProductIndex >= 0) {
+    newQuantity = this.cart.items[cartProductIndex].quantity + 1
+    updatedCartItems[cartProductIndex].quantity = newQuantity
+  } else {
+    updatedCartItems.push({ product: product._id, quantity: newQuantity })
+  }
+  const updatedCart = {
+    items: updatedCartItems
+  }
+  this.cart = updatedCart
+  return this.save()
+}
+
+userSchema.methods.deleteItemFromCart = function(productId) {
+  const updatedCartItems = this.cart.items.filter(item => {
+    return item.product.toString() !== productId.toString()
+  })
+  this.cart.items = updatedCartItems
+  return this.save()
+} 
+
+userSchema.methods.clearCart = function() {
+  this.cart = { items: [] }
+  return this.save();
+}
+
 
 module.exports = mongoose.model('User', userSchema)
 
 
 
-// const mongodb = require('mongodb')
-// const getDb = require('../util/mongodb-database').getDb
 
-// const ObjectId = mongodb.ObjectId
-// class User {
-//   constructor(name, email, cart, id) {
-//     this.name = name
-//     this.email = email
-//     this.cart = cart
-//     this._id = id
-//   }
-
-//   save() {
-//     const db = getDb()
-//     return db.collection('users').insertOne(this)
-//   }
 
 //   // Add to cart logic
 //   addToCart(product) {
