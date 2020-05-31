@@ -30,7 +30,6 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  console.log(req.isLoggedIn)
   Product.find()
     .then(products => {
       res.render('shop/index', {
