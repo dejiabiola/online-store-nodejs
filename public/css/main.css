@@ -237,6 +237,15 @@ form {
   width: 90%;
   border: 1px solid rgb(82, 82, 207);
   background-color: rgb(159, 194, 247);
+  padding: 0.5rem;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.user-message--error {
+  border: red;
+  background-color: rgb(243, 186, 186);
+  color: red;  
 }
 
 @media (min-width: 768px) {
